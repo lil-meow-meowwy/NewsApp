@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23788" systemVersion="24E263" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
+    <entity name="ArticleEntity" representedClassName=".ArticleEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="author" optional="YES" attributeType="String"/>
+        <attribute name="category" optional="YES" attributeType="String"/>
+        <attribute name="content" optional="YES" attributeType="String"/>
+        <attribute name="desc" optional="YES" attributeType="String"/>
+        <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="publishedAt" attributeType="String"/>
+        <attribute name="savedAt" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="searchQuery" optional="YES" attributeType="String"/>
+        <attribute name="source" optional="YES" attributeType="String"/>
+        <attribute name="title" attributeType="String"/>
+        <attribute name="url" attributeType="String"/>
+        <attribute name="urlToImage" optional="YES" attributeType="String"/>
+    </entity>
+</model>

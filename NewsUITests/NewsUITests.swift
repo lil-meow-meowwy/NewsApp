@@ -1,41 +1,58 @@
-//
-//  NewsUITests.swift
-//  NewsUITests
-//
-//  Created by Kristina Yaroshenko on 24.05.2025.
-//
-
 import XCTest
 
 final class NewsUITests: XCTestCase {
-
+    var app: XCUIApplication!
+    
     override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-
-        // In UI tests it is usually best to stop immediately when a failure occurs.
         continueAfterFailure = false
-
-        // In UI tests it’s important to set the initial state - such as interface orientation - required for your tests before they run. The setUp method is a good place to do this.
-    }
-
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-    }
-
-    @MainActor
-    func testExample() throws {
-        // UI tests must launch the application that they test.
-        let app = XCUIApplication()
+        app = XCUIApplication()
+        app.launchArguments.append("--uitesting")
         app.launch()
-
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
     }
-
-    @MainActor
-    func testLaunchPerformance() throws {
-        // This measures how long it takes to launch your application.
-        measure(metrics: [XCTApplicationLaunchMetric()]) {
-            XCUIApplication().launch()
+    
+    func testCategorySelectionAndArticleDisplay() {
+        app.tabBars.buttons["Categories"].tap()
+        
+        XCTAssertTrue(app.navigationBars["Categories"].exists)
+        
+        let technologyButton = app.buttons["technology_category_button"]
+        XCTAssertTrue(technologyButton.waitForExistence(timeout: 20))
+        technologyButton.tap()
+        
+        let firstArticle = app.staticTexts.element(boundBy: 2)
+        let exists = firstArticle.waitForExistence(timeout: 10)
+        XCTAssertTrue(exists, "Articles not loading after selecting a category")
+        
+        let articles = app.staticTexts.matching(identifier: "article_title")
+        XCTAssertGreaterThan(articles.count, 0, "No articles found")
+        
+        if articles.count > 0 {
+            let firstArticleTitle = articles.firstMatch.label
+            XCTAssertFalse(firstArticleTitle.isEmpty, "The article title is empty")
         }
+    }
+    
+    func testHomeScreenArticles() {
+        let homeTab = app.tabBars.buttons["Home"]
+        XCTAssertTrue(homeTab.exists)
+        
+        let articles = app.staticTexts.matching(identifier: "article_title")
+        let exists = articles.firstMatch.waitForExistence(timeout: 10)
+        XCTAssertTrue(exists, "There are no articles on the main page")
+    }
+    
+    func testSearchFunctionality() {
+        app.tabBars.buttons["Home"].tap()
+        
+        let searchField = app.searchFields["Search news..."]
+        XCTAssertTrue(searchField.waitForExistence(timeout: 5))
+        searchField.tap()
+        
+        searchField.typeText("Ukraine")
+        
+        app.keyboards.buttons["Search"].tap()
+        
+        let firstResult = app.staticTexts.matching(identifier: "article_title").firstMatch
+        XCTAssertTrue(firstResult.waitForExistence(timeout: 10))
     }
 }
