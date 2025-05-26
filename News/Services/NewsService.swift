@@ -1,7 +1,7 @@
 import Foundation
 
 class NewsService {
-    private let apiKey = "API_KEY_HERE"
+    private let apiKey = "c1761556e50a4ae6bfa92c5b721f3070"
     private let baseUrl = "https://newsapi.org/v2/"
     private let pageSize = 20
     
