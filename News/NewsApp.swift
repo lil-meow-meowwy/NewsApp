@@ -10,6 +10,8 @@ struct NewsApp: App {
 }
 
 struct AppTabView: View {
+    @StateObject private var favoritesVM = FavoritesViewModel()
+    
     var body: some View {
         TabView {
             HomeView()
@@ -21,6 +23,12 @@ struct AppTabView: View {
                 .tabItem {
                     Label("Categories", systemImage: "list.bullet")
                 }
+            
+            FavoritesView(favoritesVM: favoritesVM)
+                .tabItem{
+                    Label("Favourites", systemImage: "heart")
+                }
         }
+        .environmentObject(favoritesVM)
     }
 }

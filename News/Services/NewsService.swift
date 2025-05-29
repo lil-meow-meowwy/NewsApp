@@ -16,7 +16,7 @@ class NewsService {
             urlString += "&q=\(query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")"
         }
         
-        print("Fetching URL: \(urlString)") // Додайте логування
+        print("Fetching URL: \(urlString)")
         
         guard let url = URL(string: urlString) else {
             throw URLError(.badURL)

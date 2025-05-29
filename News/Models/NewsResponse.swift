@@ -16,6 +16,7 @@ struct Article: Codable, Identifiable, Equatable {
     let urlToImage: String?
     let publishedAt: String
     let content: String?
+    var isFavorite: Bool = false
     
     enum CodingKeys: String, CodingKey {
         case source, author, title, description, url, urlToImage, publishedAt, content

@@ -7,6 +7,8 @@ struct ArticleListView: View {
     let onRefresh: () -> Void
     let onLoadMore: () -> Void
     
+    @EnvironmentObject var favoritesVM: FavoritesViewModel
+    
     var body: some View {
         if let error = error {
             ErrorView(error: error, onRetry: onRefresh)
@@ -20,7 +22,7 @@ struct ArticleListView: View {
         } else {
             List {
                 ForEach(articles) { article in
-                    ArticleRow(article: article)
+                    ArticleRow(article: article, favoritesVM: favoritesVM)
                         .onAppear {
                             if articles.firstIndex(where: { $0.id == article.id }) == articles.count - 1 {
                                 onLoadMore()
@@ -43,53 +45,41 @@ struct ArticleListView: View {
 
 struct ArticleRow: View {
     let article: Article
-    
-    init(article: Article){
-        self.article = article
-        print("Displaying article: \(article.title)")
-    }
+    @ObservedObject var favoritesVM: FavoritesViewModel
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            if let urlToImage = article.urlToImage, let url = URL(string: urlToImage) {
-                AsyncImage(url: url) { image in
-                    image.resizable()
-                        .aspectRatio(contentMode: .fill)
-                } placeholder: {
-                    Color.gray.opacity(0.3)
+        NavigationLink(destination: ArticleDetailView(article: article, favoritesVM: favoritesVM)) {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text(article.title)
+                        .font(.headline)
+                    
+                    Spacer()
+                    
+                    if favoritesVM.isFavorite(article) {
+                        Image(systemName: "heart.fill")
+                            .foregroundColor(.red)
+                    }
                 }
-                .frame(height: 200)
-                .clipped()
-                .cornerRadius(8)
-            }
-            
-            Text(article.title)
-                .font(.headline)
-                .accessibilityIdentifier("article_title")
-            
-            if let description = article.description {
-                Text(description)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .lineLimit(2)
-            }
-            
-            HStack {
-                Text(article.source.name)
-                    .font(.caption)
-                    .foregroundColor(.blue)
                 
-                Spacer()
-                
-                if let date = article.publishedAt.formattedDate() {
-                    Text(date)
-                        .font(.caption)
-                        .foregroundColor(.gray)
+                if let description = article.description {
+                    Text(description)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .lineLimit(2)
+                }
+            }
+            .padding()
+            .contextMenu {
+                Button(action: { favoritesVM.toggleFavorite(article) }) {
+                    Label(
+                        favoritesVM.isFavorite(article) ? "Видалити з обраного" : "Додати до обраного",
+                        systemImage: favoritesVM.isFavorite(article) ? "heart.slash" : "heart"
+                    )
                 }
             }
         }
-        .accessibilityElement(children: .combine)
-        .padding(.vertical, 8)
+        .buttonStyle(PlainButtonStyle())
     }
 }
 

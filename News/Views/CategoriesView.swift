@@ -4,6 +4,7 @@ import SwiftUI
 struct CategoriesView: View {
     @StateObject private var viewModel = NewsViewModel()
     @State private var selectedCategory: Category?
+    @EnvironmentObject var favoritesVM: FavoritesViewModel
     
     var body: some View {
         NavigationStack {
@@ -36,7 +37,7 @@ struct CategoriesView: View {
                 } else {
                     LazyVStack {
                         ForEach(viewModel.articles) { article in
-                            ArticleRow(article: article)
+                            ArticleRow(article: article, favoritesVM: favoritesVM)
                         }
                     }
                     .padding(.horizontal)
