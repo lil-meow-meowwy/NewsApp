@@ -2,16 +2,17 @@ import SwiftUI
 
 @main
 struct NewsApp: App {
+    let persistenceController = PersistenceController.shared
+    
     var body: some Scene {
         WindowGroup {
             AppTabView()
+                .environment(\.managedObjectContext, persistenceController.container.viewContext)
         }
     }
 }
 
 struct AppTabView: View {
-    @StateObject private var favoritesVM = FavoritesViewModel()
-    
     var body: some View {
         TabView {
             HomeView()
@@ -24,11 +25,10 @@ struct AppTabView: View {
                     Label("Categories", systemImage: "list.bullet")
                 }
             
-            FavoritesView(favoritesVM: favoritesVM)
+            FavouritesView()
                 .tabItem{
                     Label("Favourites", systemImage: "heart")
                 }
         }
-        .environmentObject(favoritesVM)
     }
 }

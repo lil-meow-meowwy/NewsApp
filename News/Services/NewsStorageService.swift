@@ -91,4 +91,66 @@ class NewsStorageService {
             print("Failed to delete old articles: \(error)")
         }
     }
+    
+    func toggleFavourite(article: Article) {
+        let fetchRequest: NSFetchRequest<ArticleEntity> = ArticleEntity.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "url == %@", article.url)
+        
+        do {
+            let results = try context.fetch(fetchRequest)
+            
+            if let existingArticle = results.first {
+                // Стаття вже існує - просто змінюємо стан isFavourite
+                existingArticle.isFavourite.toggle()
+            } else {
+                // Статті немає - створюємо новий запис
+                let newArticle = ArticleEntity(context: context)
+                newArticle.id = UUID()
+                newArticle.title = article.title
+                newArticle.source = article.source.name
+                newArticle.author = article.author
+                newArticle.desc = article.description
+                newArticle.url = article.url
+                newArticle.urlToImage = article.urlToImage
+                newArticle.publishedAt = article.publishedAt
+                newArticle.content = article.content
+                newArticle.isFavourite = true
+                newArticle.savedAt = Date()
+            }
+            
+            try context.save()
+        } catch {
+            print("Failed to toggle favourite: \(error)")
+        }
+    }
+
+    func getFavouriteArticles() -> [Article] {
+        let fetchRequest: NSFetchRequest<ArticleEntity> = ArticleEntity.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "isFavourite == YES")
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "savedAt", ascending: false)]
+        
+        // Додаємо обмеження на унікальність за URL
+        fetchRequest.propertiesToFetch = ["url", "title", "source", "author", "desc", "urlToImage", "publishedAt", "content"]
+        fetchRequest.returnsDistinctResults = true
+        
+        do {
+            let results = try context.fetch(fetchRequest)
+            return results.compactMap { entity in
+                guard let url = entity.url else { return nil }
+                return Article(
+                    source: Source(id: nil, name: entity.source ?? "Unknown"),
+                    author: entity.author,
+                    title: entity.title ?? "",
+                    description: entity.desc,
+                    url: url,
+                    urlToImage: entity.urlToImage,
+                    publishedAt: entity.publishedAt ?? "",
+                    content: entity.content
+                )
+            }
+        } catch {
+            print("Failed to fetch favourites: \(error)")
+            return []
+        }
+    }
 }

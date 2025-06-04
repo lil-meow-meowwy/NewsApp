@@ -7,48 +7,46 @@ class NewsViewModel: ObservableObject {
     @Published var error: Error?
     @Published var currentPage = 1
     @Published var canLoadMore = true
-    
+    @Published var currentQuery: String? = nil
+    @Published var currentCategory: Category?
+
     private let newsService = NewsService()
     private let storageService = NewsStorageService()
-    private var currentCategory: Category?
-    
-    func loadArticles(category: Category? = nil, isRefreshing: Bool = false) {
+
+    func loadArticles(query: String? = nil, category: Category? = nil, isRefreshing: Bool = false) {
         guard !isLoading else { return }
-        
+
         if isRefreshing {
             currentPage = 1
             canLoadMore = true
         }
-        
+
         currentCategory = category
-        
+        currentQuery = query
+
         Task {
             do {
                 isLoading = true
                 if isRefreshing {
                     articles = []
                 }
-                
-                let localArticles = storageService.fetchArticles(
-                    for: category?.rawValue,
-                    page: currentPage,
-                    pageSize: 20
-                )
-                
-                if !localArticles.isEmpty {
-                    articles = isRefreshing ? localArticles : articles + localArticles
-                }
-                
+
                 let response = try await newsService.fetchTopHeadlines(
                     page: currentPage,
-                    category: category
+                    category: category,
+                    query: query
                 )
-                
+
                 await MainActor.run {
-                    articles = response.articles
-                    currentCategory = category
+                    if isRefreshing {
+                        articles = response.articles
+                    } else {
+                        articles += response.articles
+                    }
                     error = nil
+                    canLoadMore = !response.articles.isEmpty
                 }
+
                 print("Articles loaded: \(response.articles.count)")
             } catch {
                 await MainActor.run {
@@ -56,20 +54,20 @@ class NewsViewModel: ObservableObject {
                 }
                 print("Error loading articles: \(error)")
             }
-            
+
             await MainActor.run {
                 isLoading = false
             }
         }
     }
-    
+
     func loadNextPage() {
         guard !isLoading && canLoadMore else { return }
         currentPage += 1
-        loadArticles(category: currentCategory)
+        loadArticles(query: currentQuery, category: currentCategory)
     }
-    
+
     func refresh() {
-        loadArticles(category: currentCategory, isRefreshing: true)
+        loadArticles(query: currentQuery, category: currentCategory, isRefreshing: true)
     }
 }

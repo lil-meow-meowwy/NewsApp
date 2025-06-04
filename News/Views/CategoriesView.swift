@@ -1,10 +1,8 @@
-import SwiftUICore
 import SwiftUI
 
 struct CategoriesView: View {
     @StateObject private var viewModel = NewsViewModel()
     @State private var selectedCategory: Category?
-    @EnvironmentObject var favoritesVM: FavoritesViewModel
     
     var body: some View {
         NavigationStack {
@@ -16,8 +14,13 @@ struct CategoriesView: View {
                             isSelected: selectedCategory == category
                         )
                         .onTapGesture {
-                            selectedCategory = category
-                            viewModel.loadArticles(category: category, isRefreshing: true)
+                            if selectedCategory == category {
+                                selectedCategory = nil
+                                viewModel.loadArticles(isRefreshing: true)
+                            } else {
+                                selectedCategory = category
+                                viewModel.loadArticles(category: category, isRefreshing: true)
+                            }
                         }
                     }
                 }
@@ -32,18 +35,24 @@ struct CategoriesView: View {
                 } else if viewModel.articles.isEmpty {
                     Text(selectedCategory == nil ?
                          "Choose a category" :
-                         "There are no articles in this category")
+                         "There are no news in this category.")
                     .foregroundColor(.gray)
                 } else {
-                    LazyVStack {
+                    LazyVStack(spacing: 16) {
                         ForEach(viewModel.articles) { article in
-                            ArticleRow(article: article, favoritesVM: favoritesVM)
+                            NavigationLink {
+                                ArticleDetailView(article: article)
+                            } label: {
+                                ArticleRow(article: article)
+                            }
+                            .buttonStyle(PlainButtonStyle())
                         }
                     }
                     .padding(.horizontal)
                 }
             }
             .navigationTitle("Categories")
+            .navigationBarTitleDisplayMode(.inline)
             .refreshable {
                 viewModel.loadArticles(category: selectedCategory, isRefreshing: true)
             }
@@ -58,15 +67,15 @@ struct CategoryCard: View {
     var body: some View {
         VStack(spacing: 8) {
             Image(systemName: iconForCategory(category))
-                .font(.system(size: 20)) // Зменшений розмір іконки
+                .font(.system(size: 20))
                 .foregroundColor(isSelected ? .blue : .primary)
             
             Text(category.displayName)
-                .font(.system(size: 12)) // Зменшений розмір тексту
+                .font(.system(size: 12))
                 .foregroundColor(isSelected ? .blue : .primary)
                 .multilineTextAlignment(.center)
         }
-        .frame(width: 80, height: 80) // Фіксований розмір картки
+        .frame(width: 80, height: 80)
         .background(isSelected ? Color.blue.opacity(0.1) : Color.gray.opacity(0.05))
         .cornerRadius(12)
         .overlay(

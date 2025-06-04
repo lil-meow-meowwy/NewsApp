@@ -1,4 +1,5 @@
 import SwiftUI
+import CoreData
 
 struct ArticleListView: View {
     let articles: [Article]
@@ -6,8 +7,6 @@ struct ArticleListView: View {
     let error: Error?
     let onRefresh: () -> Void
     let onLoadMore: () -> Void
-    
-    @EnvironmentObject var favoritesVM: FavoritesViewModel
     
     var body: some View {
         if let error = error {
@@ -22,7 +21,7 @@ struct ArticleListView: View {
         } else {
             List {
                 ForEach(articles) { article in
-                    ArticleRow(article: article, favoritesVM: favoritesVM)
+                    ArticleRow(article: article)
                         .onAppear {
                             if articles.firstIndex(where: { $0.id == article.id }) == articles.count - 1 {
                                 onLoadMore()
@@ -45,41 +44,47 @@ struct ArticleListView: View {
 
 struct ArticleRow: View {
     let article: Article
-    @ObservedObject var favoritesVM: FavoritesViewModel
+    @Environment(\.managedObjectContext) private var viewContext
+    @State private var isFavourite: Bool = false
     
     var body: some View {
-        NavigationLink(destination: ArticleDetailView(article: article, favoritesVM: favoritesVM)) {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Text(article.title)
-                        .font(.headline)
-                    
-                    Spacer()
-                    
-                    if favoritesVM.isFavorite(article) {
-                        Image(systemName: "heart.fill")
-                            .foregroundColor(.red)
-                    }
-                }
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(article.title)
+                    .font(.headline)
                 
-                if let description = article.description {
-                    Text(description)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .lineLimit(2)
-                }
-            }
-            .padding()
-            .contextMenu {
-                Button(action: { favoritesVM.toggleFavorite(article) }) {
-                    Label(
-                        favoritesVM.isFavorite(article) ? "Видалити з обраного" : "Додати до обраного",
-                        systemImage: favoritesVM.isFavorite(article) ? "heart.slash" : "heart"
-                    )
+                Spacer()
+                
+                Button{
+                    toggleFavourite()
+                } label: {
+                    Image(systemName: isFavourite ? "heart.fill" : "heart")
+                        .foregroundColor(isFavourite ? .red : .gray)
                 }
             }
         }
-        .buttonStyle(PlainButtonStyle())
+        .onAppear {
+            checkFavouriteStatus()
+        }
+    }
+    
+    private func checkFavouriteStatus() {
+        let fetchRequest: NSFetchRequest<ArticleEntity> = ArticleEntity.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "url == %@", article.url)
+        fetchRequest.fetchLimit = 1
+        
+        do {
+            let results = try viewContext.fetch(fetchRequest)
+            isFavourite = results.first?.isFavourite ?? false
+        } catch {
+            print("Failed to check favourite status: \(error)")
+        }
+    }
+    
+    private func toggleFavourite() {
+        let storageService = NewsStorageService(context: viewContext)
+        storageService.toggleFavourite(article: article)
+        isFavourite.toggle()
     }
 }
 
