@@ -1,4 +1,3 @@
-import SwiftUICore
 import SwiftUI
 import CoreData
 
@@ -13,8 +12,9 @@ struct ArticleDetailView: View {
                 // Зображення новини
                 if let imageUrl = article.urlToImage, let url = URL(string: imageUrl) {
                     AsyncImage(url: url) { image in
-                        image.resizable()
-                            .aspectRatio(contentMode: .fill)
+                        image
+                            .resizable()
+                            .scaledToFit()
                     } placeholder: {
                         ProgressView()
                     }
@@ -27,6 +27,8 @@ struct ArticleDetailView: View {
                 Text(article.title)
                     .font(.title)
                     .fontWeight(.bold)
+                    .multilineTextAlignment(.leading)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 
                 // Джерело та дата
                 HStack {
@@ -40,6 +42,7 @@ struct ArticleDetailView: View {
                         Text(date)
                             .font(.subheadline)
                             .foregroundColor(.gray)
+                            .lineLimit(1)
                     }
                 }
                 
@@ -55,6 +58,8 @@ struct ArticleDetailView: View {
                     Text(description)
                         .font(.body)
                         .padding(.vertical, 8)
+                        .multilineTextAlignment(.leading)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 
                 // Контент
@@ -62,6 +67,8 @@ struct ArticleDetailView: View {
                     Text(content)
                         .font(.body)
                         .padding(.vertical, 8)
+                        .multilineTextAlignment(.leading)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 
                 // Посилання
@@ -104,7 +111,9 @@ struct ArticleDetailView: View {
     
     private func toggleFavourite() {
         let storageService = NewsStorageService(context: viewContext)
+        
         storageService.addToFavourites(article: article)
+        
         isFavourite.toggle()
     }
 }

@@ -100,10 +100,8 @@ class NewsStorageService {
             let results = try context.fetch(fetchRequest)
             
             if let existingArticle = results.first {
-                // Стаття вже існує - просто змінюємо стан isFavourite
                 existingArticle.isFavourite.toggle()
             } else {
-                // Статті немає - створюємо новий запис
                 let newArticle = ArticleEntity(context: context)
                 newArticle.id = UUID()
                 newArticle.title = article.title
@@ -143,7 +141,6 @@ class NewsStorageService {
         fetchRequest.predicate = NSPredicate(format: "isFavourite == YES")
         fetchRequest.sortDescriptors = [NSSortDescriptor(key: "savedAt", ascending: false)]
         
-        // Додаємо обмеження на унікальність за URL
         fetchRequest.propertiesToFetch = ["url", "title", "source", "author", "desc", "urlToImage", "publishedAt", "content"]
         fetchRequest.returnsDistinctResults = true
         

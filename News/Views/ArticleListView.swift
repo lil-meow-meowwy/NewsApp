@@ -44,6 +44,7 @@ struct ArticleListView: View {
 
 struct ArticleRow: View {
     let article: Article
+    
     @Environment(\.managedObjectContext) private var viewContext
     @State private var isFavourite: Bool = false
     

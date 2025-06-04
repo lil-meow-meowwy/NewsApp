@@ -43,6 +43,7 @@ struct FavouritesView: View {
     
     private func loadFavourites() {
         let storageService = NewsStorageService(context: viewContext)
+        
         favouriteArticles = storageService.getFavouriteArticles()
     }
 }
