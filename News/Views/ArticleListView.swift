@@ -60,7 +60,9 @@ struct ArticleRow: View {
                 } label: {
                     Image(systemName: isFavourite ? "heart.fill" : "heart")
                         .foregroundColor(isFavourite ? .red : .gray)
+                        .animation(.easeInOut, value: isFavourite)
                 }
+                .buttonStyle(.plain)
             }
         }
         .onAppear {
@@ -82,8 +84,14 @@ struct ArticleRow: View {
     }
     
     private func toggleFavourite() {
-        let storageService = NewsStorageService(context: viewContext)
-        storageService.toggleFavourite(article: article)
+        let storage = NewsStorageService(context: viewContext)
+        
+        if isFavourite {
+            storage.removeFromFavourites(article: article)
+        } else {
+            storage.addToFavourites(article: article)
+        }
+        
         isFavourite.toggle()
     }
 }

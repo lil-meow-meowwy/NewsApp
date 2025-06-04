@@ -92,7 +92,7 @@ class NewsStorageService {
         }
     }
     
-    func toggleFavourite(article: Article) {
+    func addToFavourites(article: Article) {
         let fetchRequest: NSFetchRequest<ArticleEntity> = ArticleEntity.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "url == %@", article.url)
         
@@ -124,6 +124,20 @@ class NewsStorageService {
         }
     }
 
+    func removeFromFavourites(article: Article) {
+        let request: NSFetchRequest<ArticleEntity> = ArticleEntity.fetchRequest()
+        request.predicate = NSPredicate(format: "url == %@", article.url)
+        
+        do {
+            if let articleEntity = try context.fetch(request).first {
+                articleEntity.isFavourite = false
+                try context.save()
+            }
+        } catch {
+            print("Failed to remove from favourites: \(error)")
+        }
+    }
+    
     func getFavouriteArticles() -> [Article] {
         let fetchRequest: NSFetchRequest<ArticleEntity> = ArticleEntity.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "isFavourite == YES")

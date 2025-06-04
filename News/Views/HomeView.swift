@@ -13,6 +13,7 @@ struct HomeView: View {
                     } label: {
                         ArticleRow(article: article)
                     }
+                    
                     .onAppear {
                         if article == viewModel.articles.last {
                             viewModel.loadNextPage()

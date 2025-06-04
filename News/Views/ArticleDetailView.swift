@@ -104,7 +104,7 @@ struct ArticleDetailView: View {
     
     private func toggleFavourite() {
         let storageService = NewsStorageService(context: viewContext)
-        storageService.toggleFavourite(article: article)
+        storageService.addToFavourites(article: article)
         isFavourite.toggle()
     }
 }
