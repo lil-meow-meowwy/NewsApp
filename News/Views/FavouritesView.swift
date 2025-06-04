@@ -19,7 +19,7 @@ struct FavouritesView: View {
                     .listStyle(.plain)
                 }
             }
-            .navigationTitle("Улюблені")
+            .navigationTitle("Favourites")
             .refreshable {
                 loadFavourites()
             }
